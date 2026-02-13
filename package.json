@@ -1,0 +1,68 @@
+{
+  "name": "jolahaapp",
+  "version": "1.0.0",
+  "main": "main.js",
+  "description": "Authenticator for Jolaha portal",
+  "author": "Jolaha",
+  "scripts": {
+    "start": "npx electron .",
+    "pack": "npx electron-builder --dir",
+    "dist": "npx electron-builder",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "build": {
+    "appId": "com.jolaha.employeeproductivity",
+    "productName": "Jolaha App",
+    "directories": {
+      "output": "dist"
+    },
+    "asar": false,
+    "files": [
+      "**/*"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.ico",
+      "executableName": "JolahaApp"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "perMachine": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "runAfterFinish": true
+    },
+    "mac": {
+      "target": "dmg"
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "anjuamcaIT",
+        "repo": "EmployeeProductivityApp-updates",
+        "private": false
+      }
+    ]
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-free": "^7.1.0",
+    "@microsoft/signalr": "^10.0.0",
+    "active-win": "^8.0.0",
+    "axios": "^1.5.0",
+    "electron-updater": "^5.3.0",
+    "is-online": "^12.0.2",
+    "node-addon-api": "^8.5.0",
+    "nodemailer": "^6.9.3",
+    "ps-list": "^9.0.0",
+    "screenshot-desktop": "^1.15.3"
+  },
+  "devDependencies": {
+    "@electron/rebuild": "^4.0.2",
+    "electron": "30.3.0",
+    "electron-builder": "^26.7.0",
+    "electron-rebuild": "^3.2.9",
+    "electron-reload": "^1.2.1",
+    "node-gyp": "^12.1.0"
+  }
+}

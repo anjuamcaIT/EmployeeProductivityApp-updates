@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jolaha App - Productivity</title>
+<style>
+    /* Reset some basics */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+        background-color: #fff;
+        color: #333;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+    }
+
+    h2 {
+        margin-bottom: 10px;
+        color: #b7091e;
+    }
+
+    .dashboard-container {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(250px, 1fr));
+        gap: 20px;
+        width: 100%;
+        max-width: 1000px;
+    }
+
+    /* .card {
+        background-color: #eee;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        transition: transform 0.2s, box-shadow 0.2s;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    }
+
+   
+
+    
+
+    */
+
+     .card h3 {
+        font-size: 1.2rem;
+        margin-bottom: 10px;
+        color: #787d83;
+    }
+    .card span {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #2c3e50;
+    }
+     #idlePeriods {
+        font-size: 0.9rem;
+        color: #666;
+        max-height: 120px;
+        overflow-y: auto;
+        width: 100%;
+        text-align: left;
+        margin-top: 10px;
+    }
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 20px;
+    }
+
+    /* Individual Card */
+    .card {
+        background-color: #ffffff;
+        border-radius: 12px;
+        padding: 25px 20px;
+        box-shadow: 0 1px 16px rgba(0,0,0,0.1);
+        border-left: 6px solid #b7091e;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 20px rgba(0,0,0,0.15);
+    }
+
+    .card h2 {
+        font-size: 1.4rem;
+        margin-bottom: 12px;
+        color: #552984;
+    }
+
+    .card p {
+        font-size: 1.15rem;
+        margin-bottom: 5px;
+    }
+
+    .metric {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #b7091e;
+        margin-bottom: 5px;
+    }
+
+    /* Idle Periods styling */
+    /* .idle-periods {
+        background-color: #552984;
+        color: white;
+        padding: 10px 12px;
+        border-radius: 10px;
+        font-size: 0.95rem;
+        font-weight: 500;
+        text-align: center;
+    } */
+
+    @media(max-width: 500px){
+        .card h2 {
+            font-size: 1.2rem;
+        }
+        .metric {
+            font-size: 1.6rem;
+        }
+    }
+
+    #logoutBtn { 
+        border: none;
+        border-radius: 8px;
+        /* color: #fff; */
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    #logoutBtn:hover {
+        background-color: #f3f4f6;
+    } 
+    
+</style>
+</head>
+<body>
+     <div class="main-content">
+ <div id="userMenuContainer"></div>
+ <link rel="stylesheet" href="userMenu.css">
+    <h2 style="text-align:center;">Employee Productivity Dashboard</h2>
+<div id="activityHour" style="text-align: center;
+    margin-bottom: 20px;
+    font-size: 1.1rem;
+    color: #552984;
+    font-weight: bold;">
+    Activity Hour: -- 
+</div>
+<div class="dashboard-container">
+
+    <div class="card">
+        <h3>Last Active Time</h3>
+        <span id="activeTime" style="font-size: 1.2rem !important;">  --</span>
+    </div>
+    <div class="card">
+        <h3>Keystrokes Count</h3>
+        <span id="keyCount">0</span>
+    </div>
+    <div class="card">
+        <h3>Idle Minutes</h3>
+        <span id="idleMinutes">0</span>
+    </div>
+    <div class="card">
+        <h3>Idle Periods</h3>
+        <div id="idlePeriods">None</div>
+    </div>
+</div> 
+</div>
+<script src="userMenuLoader.js"></script>
+<script>
+        loadUserMenu();  
+</script>
+<script src="dashboard.js"></script>
+<script src="js/fontawesome.js"></script>
+
+</body>
+</html>

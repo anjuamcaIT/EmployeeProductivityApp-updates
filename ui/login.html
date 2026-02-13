@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Jolaha App - Login</title>
+<style>
+  /* Reset & basic */
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  body {
+    background: linear-gradient(135deg, #fff, #fff);
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+  }
+
+  .login-container {
+    background-color: #fff;
+    padding: 40px 30px;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    width: 360px;
+    text-align: center;
+    width: 100%;
+    height: 100%;
+  }
+
+  .login-container h2 {
+    margin-bottom: 25px;
+    font-size: 24px;
+    font-weight: 600;
+  }
+
+  form label {
+    display: block;
+    text-align: left;
+    margin-bottom: 5px;
+    font-size: 14px;
+    color: #454b53;
+    font-weight: bold;
+  }
+
+  form input {
+    width: 100%;
+    padding: 10px 12px;
+    margin-bottom: 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    background-color: #ddd;
+  }
+
+  form input:focus {
+    box-shadow: 0 0 0 2px #b7091e;
+  }
+
+  button {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    background: #b7091e;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  button:hover {
+    background: #d63447;
+    transform: translateY(-2px);
+  }
+
+  #message {
+    margin-top: 10px;
+    color: #F87171; /* red for errors */
+    font-size: 14px;
+    min-height: 18px;
+  }
+
+  #messageDiv {
+    font-weight: bold;
+    color: #F87171;  
+    font-size: 14px;
+    min-height: 18px;
+  }
+  /* Optional: small animation for inputs */
+  form input {
+    transition: all 0.2s ease;
+  }
+  .logo-image {
+    display: block;        
+    margin: 10px auto 0;  
+    width: 150px;          
+    height: auto;        
+}
+
+.date-time {
+    font-size: 14px;
+    margin-bottom: 20px;
+    color: #fff;
+    background-color: #5e2193;
+    width: 50%;
+    margin: auto;
+    font-weight: bold;
+    border-radius: 8px;
+}
+</style>
+</head>
+<body>
+
+<div class="login-container">
+  <!-- <h2>Jolaha App</h2> -->
+   <!-- Logo -->
+  <img src="https://portal.jolaha.com/images/jolahamainlogo.svg" alt="Jolaha App Logo" class="logo-image">
+
+  <!-- Date and Time -->
+  <div id="dateTime" class="date-time"></div>
+  <form id="loginForm">
+    <label>Username</label>
+    <input type="text" id="username" placeholder="Enter your username" required>
+
+    <label>Password</label>
+    <input type="password" id="password" placeholder="Enter your password" required>
+
+    <label>Security Key</label>
+    <input type="password" id="securityKey" placeholder="Enter security key" required>
+
+    <button type="submit">Login</button>
+  </form>
+  <div id="messageDiv"></div>
+  
+</div>
+
+<script src="login.js"></script>
+</body>
+</html>

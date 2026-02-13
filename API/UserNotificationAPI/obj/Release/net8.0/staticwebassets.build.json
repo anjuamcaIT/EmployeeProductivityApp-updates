@@ -1,0 +1,12 @@
+{
+  "Version": 1,
+  "Hash": "ivP8lY5M3ONdUwAeL8TwrUB2kRLQUPZwoh62F8YTmrk=",
+  "Source": "UserNotificationAPI",
+  "BasePath": "_content/UserNotificationAPI",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": [],
+  "Endpoints": []
+}

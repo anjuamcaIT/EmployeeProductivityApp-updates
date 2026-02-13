@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jolaha App - Authenticator</title>
+<style>
+    body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+    .otp-container { margin-top: 30px; }
+    .otp-code { font-size: 2em; margin: 10px 0; letter-spacing: 4px; }
+    button { padding: 8px 16px; margin-top: 10px; cursor: pointer; }
+    .timer { font-size: 14px; margin-top: 15px; color: rgb(30, 145, 223);}
+    .expired { color: red; font-weight: bold; }
+    .otp-box {
+    display: inline-block;
+    padding: 15px 25px;
+    border: 2px solid #0097e6;
+    border-radius: 12px;
+    background-color: #f0f8ff;
+    margin: 15px 0;
+    min-width: 180px;
+    
+}
+h2 {
+        margin-bottom: 20px;
+        color: #b7091e;
+    }
+.otp-code {
+    font-size: 2.5em;
+    letter-spacing: 8px;
+    font-weight: bold;
+    color: #2f3640;
+    text-align: center;
+}
+button#copyBtn {
+    padding: 8px 16px;
+    border: 1px solid #0097e6;
+    border-radius: 8px;
+    background-color: #0097e6;
+    color: #fff;
+    font-size: 1em;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+button#copyBtn:hover:not(:disabled) {
+    background-color: #007bb8;
+}
+
+button#copyBtn:disabled {
+    background-color: #dcdde1;
+    border-color: #dcdde1;
+    cursor: not-allowed;
+    color: #888;
+}
+
+/* New Css
+ */
+ body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f0f0f0;
+        display: flex;
+        justify-content: center;
+        /* align-items: center; */
+        height: 100vh;
+    }
+
+    .auth-card {
+        background-color: #fff;
+        padding: 30px 25px;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        /* width: 350px; */
+        text-align: center;
+    }
+
+    .auth-card img {
+        width: 60px;
+        height: 60px;
+        margin-bottom: 20px;
+    }
+
+    .auth-card h1 {
+        font-size: 22px;
+        margin-bottom: 10px;
+        color: #111;
+    }
+
+    .auth-card p {
+        font-size: 14px;
+        color: #555;
+        margin-bottom: 25px;
+    }
+
+    .account-info {
+        background-color: #f8f8f8;
+        padding: 15px;
+        border-radius: 12px;
+        margin-bottom: 30px;
+        font-size: 14px;
+        color: #333;
+    }
+
+    .account-info span {
+        display: block;
+        font-weight: bold;
+    }
+
+    .button-group {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+    }
+
+    .button-group button {
+        flex: 1;
+        padding: 12px 0;
+        font-size: 16px;
+        font-weight: 600;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .approve-btn {
+        background-color: #28a745;
+        color: #fff;
+    }
+
+    .approve-btn:hover {
+        background-color: #218838;
+    }
+
+    .deny-btn {
+        background-color: #dc3545;
+        color: #fff;
+    }
+
+    .deny-btn:hover {
+        background-color: #c82333;
+    }
+
+ /* End New Css */
+</style>
+</head>
+<body>
+<div class="main-content">
+<div id="userMenuContainer"></div>
+<link rel="stylesheet" href="userMenu.css">
+<h2>Verification Code </h2>
+<div class="otp-container">
+    <div class="otp-box">
+    <div class="otp-code" id="otpCode">----</div>
+    </div>  
+    <br> 
+    <button id="copyBtn">Copy OTP</button>
+    <div class="timer" id="timerText">Loading...</div>
+</div>
+<div style="display:none;"  class="auth-card">
+    <img src="https://cdn-icons-png.flaticon.com/512/565/565547.png" alt="App Logo">
+    <h1>Sign-In Request</h1>
+    <p>Do you want to allow this login attempt?</p>
+
+    <div class="account-info">
+        <span>John Doe</span>
+        john.doe@example.com
+    </div>
+
+    <div class="button-group">
+        <button class="approve-btn">Approve</button>
+        <button class="deny-btn">Deny</button>
+    </div>
+</div>
+</div>
+<script>
+ 
+ let countdownInterval = null;
+let remainingSecs = null;
+let currentOTP = null; 
+
+async function fetchOTP() {
+    try {
+        const data = await window.electronAPI.OTP.init();
+        const otpCodeEl = document.getElementById('otpCode');
+        const timerEl = document.getElementById('timerText');
+        const copyBtn = document.getElementById('copyBtn');
+
+        const otpCode = data.OTPCode ?? '----';
+        const otpSecs = Number(data.OTPSecs) || 180;
+
+        // OTP expired
+        if (otpSecs >= 60) {
+            otpCodeEl.textContent = '----';
+            timerEl.textContent = 'Your OTP has expired. Please log in to the portal to request a new one.';
+            timerEl.classList.add('expired');
+            copyBtn.disabled = true;
+            clearInterval(countdownInterval);
+            countdownInterval = null;
+            remainingSecs = null;
+            currentOTP = null;
+            return;
+        }
+
+        // Only update countdown if OTP changed
+        if (otpCode !== currentOTP) {
+            currentOTP = otpCode;
+            remainingSecs = 60 - otpSecs;
+            otpCodeEl.textContent = otpCode;
+            timerEl.classList.remove('expired');
+            copyBtn.disabled = false;
+
+            if (countdownInterval) clearInterval(countdownInterval);
+
+            countdownInterval = setInterval(() => {
+                if (remainingSecs > 0) {
+                    timerEl.textContent = `Your OTP will expire in ${remainingSecs} sec`;
+                    remainingSecs--;
+                } else {
+                    otpCodeEl.textContent = '----';
+                    timerEl.textContent = 'Your OTP has expired. Please log in to the portal to request a new one.';
+                    timerEl.classList.add('expired');
+                    copyBtn.disabled = true;
+                    clearInterval(countdownInterval);
+                    countdownInterval = null;
+                    remainingSecs = null;
+                    currentOTP = null;
+                }
+            }, 1000);
+
+            // Copy button
+            copyBtn.onclick = () => {
+                navigator.clipboard.writeText(otpCode)
+                    .then(() => alert('OTP copied!'))
+                    .catch(err => console.error(err));
+            };
+        }
+        // If OTP hasn't changed, do nothing — let countdown continue
+
+    } catch (err) {
+        console.error('Error fetching OTP:', err);
+    }
+}
+
+// ------------------- Initial fetch + polling -------------------
+document.getElementById('timerText').textContent = 'Loading OTP...';
+document.getElementById('otpCode').textContent = '----';
+document.getElementById('copyBtn').disabled = true;
+
+fetchOTP();               
+setInterval(fetchOTP, 1000); // poll every 2 secs
+
+</script>
+
+
+<script src="userMenuLoader.js"></script>
+<script>
+loadUserMenu();  
+</script> 
+<script src="js/fontawesome.js"></script>
+</body>
+</html>

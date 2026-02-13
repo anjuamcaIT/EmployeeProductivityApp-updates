@@ -1,0 +1,40 @@
+<!-- userMenu.html -->
+<div id="userMenu">
+    <img id="profilePic" src="" alt="Profile" />
+    <div class="dropdown-content">
+        <!-- User info inside dropdown -->
+        <div class="user-info">
+            <span id="empName">Employee Name</span><br />
+            <span id="empId">EMP#221</span>
+        </div>
+        <hr /> 
+        <!-- Menu items -->
+        <div class="dropdown-item" style="display: none;"  id="myProfile">My Profile</div>
+        <div class="dropdown-item" style="display: none;" id="InfoProdBtn">Productivity</div>
+        <div class="dropdown-item" id="InfoOTPBtn">Verification Code</div>
+        <div class="dropdown-item" id="logoutBtn">Logout</div> 
+    </div>
+</div>
+
+<!-- Vertical Menu Sidebar -->
+  <!-- Vertical Sidebar -->
+    <div style="display: none;" id="verticalMenu">
+          <div class="menu-item" id="OTPBtn">
+            <i class="fas fa-key"></i> <span>Authenticator</span>
+        </div>
+        <div style="display: none;" class="menu-item" id="ProdBtn">
+            <i class="fas fa-chart-line"></i> <span>Productivity</span>
+        </div> 
+    </div>
+
+
+<!-- Logout Modal -->
+<div id="logoutModal" class="modal">
+    <div class="modal-content">
+        <span class="closeBtn">&times;</span>
+        <h3>Enter Security Key</h3>
+        <input type="password" id="securityKeyInput" placeholder="Security Key" />
+        <button id="confirmLogout">Confirm Logout</button>
+        <p id="logoutError" style="color:red; display:none; margin-top:10px;"></p>
+    </div>
+</div> 
