@@ -143,6 +143,40 @@ button#copyBtn:disabled {
         background-color: #c82333;
     }
 
+    .user-card {
+    display: flex;
+    align-items: center;
+    background-color: #f8f9fa;
+    border: 1px solid #dcdde1;
+    border-radius: 12px;
+    padding: 15px 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    max-width: 300px;
+    margin: 20px auto 0 auto;
+}
+
+.user-card img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    margin-right: 15px;
+    object-fit: cover;
+    border: 2px solid #0097e6;
+}
+
+.user-info .user-name {
+    font-weight: bold;
+    font-size: 16px;
+    color: #2f3640;
+}
+
+.user-info .user-id {
+    font-size: 14px;
+    color: #555;
+    margin-top: 2px;
+}
+
+
  /* End New Css */
 </style>
 </head>
@@ -151,6 +185,11 @@ button#copyBtn:disabled {
 <div id="userMenuContainer"></div>
 <link rel="stylesheet" href="userMenu.css">
 <h2>Verification Code </h2>
+
+  <!-- Date & Time display -->
+    <div id="dateTimeCard" class="date-time-card" style="margin-top:20px; font-size:14px; color:#2f3640;font-weight: 600;">
+        Loading date & time...
+    </div>
 <div class="otp-container">
     <div class="otp-box">
     <div class="otp-code" id="otpCode">----</div>
@@ -249,9 +288,27 @@ document.getElementById('timerText').textContent = 'Loading OTP...';
 document.getElementById('otpCode').textContent = '----';
 document.getElementById('copyBtn').disabled = true;
 
+ function updateDateTime() {
+    const dateTimeEl = document.getElementById('dateTimeCard');
+    if (!dateTimeEl) return;
+
+    const now = new Date();
+    // Format: Monday, 13 Feb 2026, 17:30:45
+    const options = { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' };
+    const dateStr = now.toLocaleDateString(undefined, options);
+    const timeStr = now.toLocaleTimeString(undefined, { hour12: false });
+    
+    dateTimeEl.innerText = `${dateStr}, ${timeStr}`;
+} 
+setInterval(updateDateTime, 1000);
+updateDateTime();  
+
+
+
+
 fetchOTP();               
 setInterval(fetchOTP, 1000); // poll every 2 secs
-
+loadUserCard();
 </script>
 
 

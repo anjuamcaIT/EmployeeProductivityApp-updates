@@ -6,6 +6,11 @@ const crypto = require('crypto');
 const gotTheLock = app.requestSingleInstanceLock();
 const signalr = require("./services/signalrService");
 const { fetchOTP, onUpdate } = require('./trackers/OTP');
+const { autoUpdater } = require('electron-updater');
+const log = require('electron-log');
+
+autoUpdater.logger = log;
+autoUpdater.logger.transports.file.level = "info";
 
 let userToken = null;
 let tokenExpiryTime = null;
@@ -39,6 +44,7 @@ if (!gotTheLock) {
 app.whenReady().then(async () => { 
     await loadAuth();
     createWindow(); 
+    autoUpdater.checkForUpdatesAndNotify();
     mainWindow.once('ready-to-show', () => {
         mainWindow.show();
     });  
@@ -500,5 +506,15 @@ ipcMain.on('quit-confirmed', () => {
     app.quit();
 });  
 
-
+autoUpdater.on("update-downloaded", () => {
+  const { dialog } = require("electron");
+  dialog.showMessageBox({
+    type: "info",
+    title: "Update Ready",
+    message: "A new update is ready. Restart now?",
+    buttons: ["Restart", "Later"]
+  }).then(result => {
+    if (result.response === 0) autoUpdater.quitAndInstall();
+  });
+});
 
