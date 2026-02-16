@@ -60,16 +60,41 @@ app.whenReady().then(async () => {
     setupAutoLaunch();
 });
 
+// async function loadAuth() {
+//     try {
+//         if (fs.existsSync(authFile)) {
+//             auth = JSON.parse(await fs.promises.readFile(authFile, 'utf-8'));
+//         }
+//     } catch (err) {
+//         console.error("Error loading User:", err);
+//         auth = { isLoggedIn: false, user: {}, token: null };
+//     }
+// }
+
 async function loadAuth() {
     try {
         if (fs.existsSync(authFile)) {
             auth = JSON.parse(await fs.promises.readFile(authFile, 'utf-8'));
+
+            if (auth.token) {
+                try {
+                    const jwtPayload = JSON.parse(Buffer.from(auth.token.split(".")[1], "base64").toString());
+                    tokenExpiryTime = jwtPayload.exp * 1000; // convert to ms
+                    userToken = auth.token;
+                    console.log("Token loaded from authFile, expires at:", new Date(tokenExpiryTime));
+                } catch (err) {
+                    console.warn("Failed to decode token from authFile", err);
+                    tokenExpiryTime = null;
+                    userToken = null;
+                }
+            }
         }
     } catch (err) {
-        console.error("Error loading User:", err);
+        console.error("Error loading auth file:", err);
         auth = { isLoggedIn: false, user: {}, token: null };
     }
 }
+
 
 
 // ===== CREATE WINDOW =====
@@ -183,6 +208,7 @@ function setupAutoLaunch() {
 // ===== Background Tasks =====
 async function backgroundStartup(auth) {
     try { 
+        debugger
         console.log("Starting background services...");  
         setTimeout(monitorInternet, 5000); 
         if (!auth.isLoggedIn) return; 
@@ -194,7 +220,8 @@ async function backgroundStartup(auth) {
             return;
         } 
          startAllBackgroundServices(auth.user); 
-        signalr.startSignalR(getValidToken); 
+        //signalr.startSignalR(getValidToken); 
+        signalr.startSignalR(getValidToken);
         console.log("Background services started");
 
     } catch (err) {
@@ -214,28 +241,26 @@ function startAllBackgroundServices(employee) {
 function loadServices() {
     if (!api) api = require('./services/apiClient');
     if (!checkInternet) checkInternet = require('./services/internetCheck');
-}
-
-// function startTracking(employee) {
-//     loadTrackers();
-//     startActivityTracker(employee);
-// }
+} 
 
 async function getValidToken() { 
+    debugger
+     console.log("Token Eapiry...",tokenExpiryTime); 
     if (!userToken || (tokenExpiryTime && Date.now() > tokenExpiryTime)) {
         console.log("Token expired or missing, performing silent login..."); 
-        const authData = fs.existsSync(authFile) 
+        const authData = fs.existsSync(authFile)  
     ? JSON.parse(await fs.promises.readFile(authFile, 'utf-8')) 
     : null;
         if (!authData || !authData.isLoggedIn) {
             console.log("No stored credentials, cannot refresh token");
             return null;
         } 
+        console.log("Credential",authData); 
         try {
             const response = await api.post("/Auth/login", {
-                UserId: authData.user.ID,
-                Password: authData.user.Password || "",
-                SecurityKey: authData.user.AuthSecuritykey,
+                UserId: authData.user.id,
+                Password: authData.user.password || "",
+                SecurityKey: authData.user.authSecuritykey,
                 HostName: os.hostname(),
                 MacAddress: getMacAddress(),
                 DeviceId: generateDeviceId(),

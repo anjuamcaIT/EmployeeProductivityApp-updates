@@ -15,12 +15,14 @@ let connection = null;
  
 
 async function startSignalR(getTokenFunc) {
+    debugger
     if (connection) return connection;
 
     connection = new signalR.HubConnectionBuilder()
     .withUrl(`${RootURL}/notificationHub`, {
         accessTokenFactory: async () => {
             const token = await getTokenFunc();
+             console.log("SignalR Token:", token);
             if (!token) {
                 console.error("SignalR: No valid token available!");
                 throw new Error("No valid token for SignalR");
@@ -45,6 +47,7 @@ async function startSignalR(getTokenFunc) {
         });
 
     try {
+        debugger
         await connection.start();
         console.log("SignalR connected ✅");
     } catch (err) {
