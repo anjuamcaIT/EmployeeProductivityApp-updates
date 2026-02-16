@@ -42,6 +42,7 @@ if (!gotTheLock) {
 
 // ===== App Starts =====
 app.whenReady().then(async () => { 
+    app.setAppUserModelId("com.jolaha.employeeproductivity");
     await loadAuth();
     createWindow(); 
     autoUpdater.checkForUpdatesAndNotify();
@@ -59,18 +60,7 @@ app.whenReady().then(async () => {
     setTimeout(() => backgroundStartup(auth), 2000); 
     setupAutoLaunch();
 });
-
-// async function loadAuth() {
-//     try {
-//         if (fs.existsSync(authFile)) {
-//             auth = JSON.parse(await fs.promises.readFile(authFile, 'utf-8'));
-//         }
-//     } catch (err) {
-//         console.error("Error loading User:", err);
-//         auth = { isLoggedIn: false, user: {}, token: null };
-//     }
-// }
-
+ 
 async function loadAuth() {
     try {
         if (fs.existsSync(authFile)) {
@@ -95,6 +85,24 @@ async function loadAuth() {
     }
 }
 
+let tokenRefreshInterval = null;
+
+function setupTokenRefreshInterval() {
+    if (tokenRefreshInterval) return; // already set
+    tokenRefreshInterval = setInterval(async () => {
+        if (!userToken) return;
+        const token = await getValidToken();
+        if (token !== userToken) {
+            console.log("Token updated, restarting SignalR...");
+            if (signalr.connection) {
+                signalr.connection.stop().then(() => {
+                    signalr.connection = null;
+                    signalr.startSignalR(getValidToken);
+                });
+            }
+        }
+    }, 10 * 60 * 1000); // every 10 mins
+}
 
 
 // ===== CREATE WINDOW =====
@@ -131,7 +139,7 @@ function buildTrayMenu(isLoggedIn) {
             {
                 label: 'Show App',
                 click: () => {
-                    mainWindow.loadFile(path.join(__dirname, 'ui/OTP.html'));
+                    mainWindow.loadFile(path.join(__dirname, 'ui/DashBoard.html'));
                     mainWindow.show();
                     mainWindow.focus();
                 }
@@ -189,7 +197,7 @@ function buildTrayMenu(isLoggedIn) {
 
 // ===== Load DashBoard =====
 function loadDashboard(employee) {
-    mainWindow.loadFile('ui/OTP.html');
+    mainWindow.loadFile('ui/DashBoard.html');
     //startTracking(employee);
 }
 
@@ -204,6 +212,50 @@ function setupAutoLaunch() {
         console.log('Auto-launch enabled for Windows');
     }
 }
+
+async function performLogin(authData, isSilent = false) {
+    try {
+        const response = await api.post("/Auth/login", {
+            UserId: authData.user.id,
+            Password: authData.user.password || "",
+            SecurityKey: authData.user.authSecuritykey,
+            HostName: os.hostname(),
+            MacAddress: getMacAddress(),
+            DeviceId: generateDeviceId(),
+            OS: getOSInfo(),
+            RegisteredDateTime: new Date().toISOString(),
+            RegisterdTimeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+        });
+
+        if (response.data.success) {
+            const employee = authData.user;
+            userToken = response.data.token;
+            const jwtPayload = JSON.parse(Buffer.from(userToken.split(".")[1], "base64").toString());
+            tokenExpiryTime = jwtPayload.exp * 1000; 
+         
+            authData.token = userToken;
+            authData.isLoggedIn = true;
+            fs.writeFileSync(authFile, JSON.stringify(authData)); 
+             
+            loadDashboard(employee);
+            startAllBackgroundServices(employee);
+            signalr.startSignalR(getValidToken);
+            buildTrayMenu(true); 
+            setupTokenRefreshInterval(); 
+            console.log(isSilent ? "Silent login success" : "Manual login success");
+            return true;
+        } else {
+            console.warn("Login failed");
+            if (!isSilent) mainWindow.loadFile('ui/login.html');
+            return false;
+        }
+    } catch (err) {
+        console.error("Login error:", err);
+        if (!isSilent) mainWindow.loadFile('ui/login.html');
+        return false;
+    }
+}
+
 
 // ===== Background Tasks =====
 async function backgroundStartup(auth) {
@@ -243,56 +295,76 @@ function loadServices() {
     if (!checkInternet) checkInternet = require('./services/internetCheck');
 } 
 
-async function getValidToken() { 
-    debugger
-     console.log("Token Eapiry...",tokenExpiryTime); 
+// async function getValidToken() {  
+//     if (!userToken || (tokenExpiryTime && Date.now() > tokenExpiryTime)) {
+//         console.log("Token expired or missing, performing silent login..."); 
+//         const authData = fs.existsSync(authFile)  
+//     ? JSON.parse(await fs.promises.readFile(authFile, 'utf-8')) 
+//     : null;
+//         if (!authData || !authData.isLoggedIn) {
+//             console.log("No stored credentials, cannot refresh token");
+//             return null;
+//         } 
+//         console.log("Credential",authData); 
+//         try {
+//             const response = await api.post("/Auth/login", {
+//                 UserId: authData.user.id,
+//                 Password: authData.user.password || "",
+//                 SecurityKey: authData.user.authSecuritykey,
+//                 HostName: os.hostname(),
+//                 MacAddress: getMacAddress(),
+//                 DeviceId: generateDeviceId(),
+//                 OS: getOSInfo(),
+//                 RegisteredDateTime: new Date().toISOString(),
+//                 RegisterdTimeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+//             });
+
+//             if (response.data.success) {
+//                 userToken = response.data.token; 
+//                 const jwtPayload = JSON.parse(Buffer.from(userToken.split(".")[1], "base64").toString());
+//                 tokenExpiryTime = jwtPayload.exp * 1000; 
+//                 console.log("Silent login success, token refreshed"); 
+//                 authData.token = userToken;
+//                 fs.writeFileSync(authFile, JSON.stringify(authData));
+//             } else {
+//                 console.warn("Silent login failed, forcing logout");
+//                 userToken = null;
+//                 tokenExpiryTime = null;
+//                 mainWindow.webContents.send("force-logout");
+//             }
+//         } catch (err) {
+//             console.error("Silent login error:", err);
+//             userToken = null;
+//             tokenExpiryTime = null;
+//             mainWindow.webContents.send("force-logout");
+//         }
+//     }
+//     return userToken;
+// } 
+
+
+async function getValidToken() {
     if (!userToken || (tokenExpiryTime && Date.now() > tokenExpiryTime)) {
-        console.log("Token expired or missing, performing silent login..."); 
-        const authData = fs.existsSync(authFile)  
-    ? JSON.parse(await fs.promises.readFile(authFile, 'utf-8')) 
-    : null;
+        console.log("Token expired or missing, attempting silent login...");
+        const authData = fs.existsSync(authFile) ? JSON.parse(fs.readFileSync(authFile, 'utf-8')) : null;
         if (!authData || !authData.isLoggedIn) {
             console.log("No stored credentials, cannot refresh token");
             return null;
-        } 
-        console.log("Credential",authData); 
-        try {
-            const response = await api.post("/Auth/login", {
-                UserId: authData.user.id,
-                Password: authData.user.password || "",
-                SecurityKey: authData.user.authSecuritykey,
-                HostName: os.hostname(),
-                MacAddress: getMacAddress(),
-                DeviceId: generateDeviceId(),
-                OS: getOSInfo(),
-                RegisteredDateTime: new Date().toISOString(),
-                RegisterdTimeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
-            });
-
-            if (response.data.success) {
-                userToken = response.data.token; 
-                const jwtPayload = JSON.parse(Buffer.from(userToken.split(".")[1], "base64").toString());
-                tokenExpiryTime = jwtPayload.exp * 1000; 
-                console.log("Silent login success, token refreshed"); 
-                authData.token = userToken;
-                fs.writeFileSync(authFile, JSON.stringify(authData));
-            } else {
-                console.warn("Silent login failed, forcing logout");
-                userToken = null;
-                tokenExpiryTime = null;
-                mainWindow.webContents.send("force-logout");
-            }
-        } catch (err) {
-            console.error("Silent login error:", err);
+        }
+        const success = await performLogin(authData, true);
+        if (!success) {
+            console.warn("Silent login failed, forcing logout");
             userToken = null;
             tokenExpiryTime = null;
             mainWindow.webContents.send("force-logout");
+            return null;
         }
     }
     return userToken;
-} 
+}
 
 function loadTrackers() {
+    debugger
     if (!startActivityTracker) {
         const trackers = require('./trackers/activityTracker');
         startActivityTracker = trackers.startActivityTracker;
@@ -357,7 +429,8 @@ async function monitorInternet() {
     }
     setTimeout(monitorInternet, 5000);
 } 
-
+loadServices(); 
+loadTrackers();
 // ===== IPC HANDLERS =====
 ipcMain.handle('login-api', async (event, loginData) => {
     loadServices();
@@ -451,30 +524,36 @@ ipcMain.handle('get-auth', async () => {
 });
 
 // Login success
-ipcMain.on('login-success', (event, data) => {
-    const employee = data.employeeDetails;
-    userToken = data.token; 
-    fs.writeFileSync(authFile, JSON.stringify({ isLoggedIn: true, user: employee, token: data.token })); 
-    loadDashboard(employee);
-    //initScreenshotManager(employee);
-    //startHeartbeat(employee);
-    startAllBackgroundServices(employee);
-    signalr.startSignalR(getValidToken);
-    //startActivityTracker(employee);
-    buildTrayMenu(true); 
-    setInterval(async () => {
-        if (!userToken) return;
-        const token = await getValidToken();
-        if (token !== userToken) {
-            console.log("Token updated, restarting SignalR...");
-            if (signalr.connection) {
-                signalr.connection.stop().then(() => {
-                    signalr.connection = null;
-                    signalr.startSignalR(getValidToken);
-                });
-            }
-        }
-    }, 10 * 60 * 1000); // every 10 minutes
+// ipcMain.on('login-success', (event, data) => {
+//     const employee = data.employeeDetails;
+//     userToken = data.token; 
+//     fs.writeFileSync(authFile, JSON.stringify({ isLoggedIn: true, user: employee, token: data.token })); 
+//     loadDashboard(employee); 
+//     startAllBackgroundServices(employee);
+//     signalr.startSignalR(getValidToken); 
+//     buildTrayMenu(true); 
+//     setInterval(async () => {
+//         if (!userToken) return;
+//         const token = await getValidToken();
+//         if (token !== userToken) {
+//             console.log("Token updated, restarting SignalR...");
+//             if (signalr.connection) {
+//                 signalr.connection.stop().then(() => {
+//                     signalr.connection = null;
+//                     signalr.startSignalR(getValidToken);
+//                 });
+//             }
+//         }
+//     }, 10 * 60 * 1000);  
+// });
+
+ipcMain.on('login-success', async (event, data) => {
+    const authData = {
+        isLoggedIn: true,
+        user: data.employeeDetails,
+        token: data.token
+    };
+    await performLogin(authData, false);
 });
 
 // Get hourly stats

@@ -5,8 +5,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('electronAPI', {
     loginWithAPI: async (loginData) => { 
         return ipcRenderer.invoke('login-api', loginData);
-    },
-   // sendUsername: (username) => ipcRenderer.send('login-success', username),
+    }, 
     loginSuccess: (data) => ipcRenderer.send('login-success', data),
     getHourlyStats: () => ipcRenderer.invoke('get-hourly-stats'),
     getAuth: () => ipcRenderer.invoke('get-auth'),
