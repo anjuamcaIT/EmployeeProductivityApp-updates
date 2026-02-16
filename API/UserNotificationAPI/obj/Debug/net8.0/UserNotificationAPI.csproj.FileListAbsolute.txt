@@ -242,3 +242,4 @@ D:\AMCA\AMCA Projects\Git Project\EmployeeProductivityApp\API\UserNotificationAP
 D:\AMCA\AMCA Projects\Git Project\EmployeeProductivityApp\API\UserNotificationAPI\obj\Debug\net8.0\UserNotificationAPI.pdb
 D:\AMCA\AMCA Projects\Git Project\EmployeeProductivityApp\API\UserNotificationAPI\obj\Debug\net8.0\UserNotificationAPI.genruntimeconfig.cache
 D:\AMCA\AMCA Projects\Git Project\EmployeeProductivityApp\API\UserNotificationAPI\obj\Debug\net8.0\ref\UserNotificationAPI.dll
+D:\AMCA\AMCA Projects\Git Project\EmployeeProductivityApp\API\UserNotificationAPI\obj\Debug\net8.0\UserNotificationAPI.sourcelink.json
