@@ -94,7 +94,16 @@ async function sendHourlyData(hourKey, stats) {
     };
 
     try {
-        await api.post('/UserActivity/UploadActivity', activity);
+        await api.post('/UserActivity/UploadActivity', activity);  
+        await api.post(
+            '/FetchMeeting/FetchTeamsCallRecordsToday',  
+            {}, // empty body
+            {   // config
+                params: { empId: currentUser.id },   
+                timeout: 300000                    
+            }
+        );
+
         //console.log(`Hourly data sent for ${hourKey}`);
     } catch (err) {
         //console.error('Error sending hourly data:', err.message || err);

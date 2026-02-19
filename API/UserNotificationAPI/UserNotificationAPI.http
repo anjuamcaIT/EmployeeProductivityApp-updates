@@ -1,6 +1,0 @@
-@UserNotificationAPI_HostAddress = https://webapi.amca.ae
-
-GET {{UserNotificationAPI_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###

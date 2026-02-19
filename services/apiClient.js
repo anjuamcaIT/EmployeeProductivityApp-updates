@@ -1,7 +1,9 @@
 const axios = require('axios'); 
 // Axios instance
 const api = axios.create({
-    baseURL: 'http://localhost:5036/api', // your base URL
+    // baseURL: 'https://webapi.amca.ae/api', // your base URL
+    //   baseURL: 'http://localhost:5036/api', // your base URL
+    baseURL: 'https://userproductivityapi.jolaha.com/api', // your base URL
     timeout: 10000,
     headers: { 'Content-Type': 'application/json' }
 });
